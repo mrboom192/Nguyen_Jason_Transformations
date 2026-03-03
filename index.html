@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGL Transformations</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="glCanvas" width="1280" height="840"></canvas>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec3 aPosition;
+      attribute vec3 aColor;
+
+      uniform mat4 uProjection;
+      uniform mat4 uView;
+      uniform mat4 uModel;
+
+      varying vec3 vColor;
+
+      void main() {
+        gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+        vColor = aColor;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+      varying vec3 vColor;
+
+      void main() {
+        gl_FragColor = vec4(vColor, 1.0);
+      }
+    </script>
+
+    <script src="WebGL.js"></script>
+    <script src="Functions.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
