@@ -69,6 +69,30 @@ function perspective(fovyRad, aspect, near, far) {
   ]);
 }
 
+function orthographic(left, right, bottom, top, near, far) {
+  const lr = 1 / (left - right);
+  const bt = 1 / (bottom - top);
+  const nf = 1 / (near - far);
+  return new Float32Array([
+    -2 * lr,
+    0,
+    0,
+    0,
+    0,
+    -2 * bt,
+    0,
+    0,
+    0,
+    0,
+    2 * nf,
+    0,
+    (left + right) * lr,
+    (top + bottom) * bt,
+    (far + near) * nf,
+    1,
+  ]);
+}
+
 function createCube() {
   const vertices = [
     -0.55, -0.55, 0.55, 1, 0, 0, 0.55, -0.55, 0.55, 1, 0, 0, 0.55, 0.55, 0.55,
@@ -191,9 +215,14 @@ function main() {
   const cubeMesh = createMesh(webglHelper, createCube());
   const octMesh = createMesh(webglHelper, createOctahedron());
 
-  const projection = perspective(
-    degToRad(45),
-    canvas.width / canvas.height,
+  const aspect = canvas.width / canvas.height;
+  const orthoHalfHeight = 4.0;
+  const orthoHalfWidth = orthoHalfHeight * aspect;
+  const projection = orthographic(
+    -orthoHalfWidth,
+    orthoHalfWidth,
+    -orthoHalfHeight,
+    orthoHalfHeight,
     0.1,
     100,
   );
@@ -230,10 +259,16 @@ function main() {
     brReachedMax: false,
   };
 
+  const cornerX = 4.2;
+  const cornerY = 2.8;
+
   let prevTime = 0;
 
   function frame(nowMs) {
     const now = nowMs * 0.001;
+    if (prevTime === 0) {
+      prevTime = now;
+    }
     const dt = Math.min(now - prevTime, 0.05);
     prevTime = now;
 
@@ -278,11 +313,17 @@ function main() {
     gl.clearColor(0.87, 0.87, 0.87, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const tl = multiply(translation(-3.7, 2.6, 0), rotationY(state.tlY));
-    const bl = multiply(translation(-3.7, -2.6, 0), rotationX(state.blX));
-    const tr = multiply(translation(3.7, 2.6, 0), rotationZ(state.trZ));
+    const tl = multiply(
+      translation(-cornerX, cornerY, 0),
+      rotationY(state.tlY),
+    );
+    const bl = multiply(
+      translation(-cornerX, -cornerY, 0),
+      rotationX(state.blX),
+    );
+    const tr = multiply(translation(cornerX, cornerY, 0), rotationZ(state.trZ));
     const br = multiply(
-      translation(3.7, -2.6, 0),
+      translation(cornerX, -cornerY, 0),
       multiply(
         rotationX(state.brA),
         multiply(
